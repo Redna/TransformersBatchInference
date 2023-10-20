@@ -19,7 +19,7 @@ class BatchedDataset(Dataset):
         return len(self.data)
 
     def __getitem__(self, i):
-        return self.data[i].prompt
+        return self.data[i].inputs
 
 
 class ExecutorQueue:
@@ -101,7 +101,7 @@ class BatchedInferenceLoop:
         if key not in self.buffers:
             self.buffers[key] = BatchedDatasetBuffer(ExecutorQueue(self.fetch_new_data), self.max_batch_size, self.max_ms_wait_time)
 
-        batched_request = BatchedCompletionRequest(**request.model_dump(), request_id=request_id)
+        batched_request = BatchedCompletionRequest(inputs=request.inputs, parameters=request.parameters, request_id=request_id)
 
         self.buffers[key].buffer.append(batched_request)
         return batched_request

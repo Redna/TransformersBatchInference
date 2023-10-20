@@ -1,4 +1,5 @@
 import asyncio
+from typing import Dict, List
 import uuid
 from fastapi import FastAPI
 from transformers import pipeline
@@ -9,7 +10,7 @@ from loguru import logger
 from fastapi.middleware.cors import CORSMiddleware
 from executor import batched_inference_loop
 
-from models import Completion, CompletionRequest
+from models import CompletionRequest
 
 app = FastAPI()
 
@@ -22,16 +23,17 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-@app.post("/v1/completion", response_model=Completion)
-async def generate_completion(request: CompletionRequest):
+@app.post("/v1/generation", response_model=List[Dict])
+async def generate_completions(request: CompletionRequest):
     request_id = str(uuid.uuid4())
 
-    logger.info(f"Batching completion for prompt: {request.prompt}")
+    logger.info(f"Batching request: {request_id}")
 
     batched_request = batched_inference_loop.add(request, request_id=request_id)
 
-    while not batched_request.completion:
-        logger.info(f"Waiting for completion with id: {request_id}")
-        await asyncio.sleep(0.5)
+    logger.info(f"Waiting for completion with id: {request_id}")
+    while not batched_request.generated_text:
+        await asyncio.sleep(0.1)
 
-    return {"number_of_tokens": len(batched_request.completion), "completion": batched_request.completion}
+    logger.info(f"Completed request: {request_id}")
+    return batched_request.generated_text
