@@ -28,7 +28,7 @@ async def run_llm_loop(event_loop: asyncio.AbstractEventLoop):
                 return [completion for completion in pipe(batch, batch_size=len(batch))]
         
             except Exception as e:
-                print(e)
+                logger.error(e)
                 return [{"error": e} for _ in range(len(batch))]
 
         completions = await event_loop.run_in_executor(None, _run_pipeline, batch)
@@ -36,5 +36,5 @@ async def run_llm_loop(event_loop: asyncio.AbstractEventLoop):
         for request, completion in zip(batch.data, completions):
             request.generated_text = completion
 
-        logger("Waiting for the next batch...")
+        logger.info("Waiting for the next batch...")
         await asyncio.sleep(0.01)
