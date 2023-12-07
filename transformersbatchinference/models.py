@@ -12,3 +12,5 @@ class CompletionRequest(BaseModel):
 class BatchedCompletionRequest(CompletionRequest):
     request_id: str
     generated_text: List[str] = None
+    prompt_tokens: List[int] = [-1]
+    new_tokens: List[int] = [-1]

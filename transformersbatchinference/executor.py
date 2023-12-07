@@ -36,7 +36,7 @@ class ExecutorQueue:
             next_batch = self.fetch_new_data()
             if next_batch:
                 self.put(next_batch)
-            await asyncio.sleep(0.1)
+            await asyncio.sleep(0.01)
 
         return self.datasets.pop(0)
 
@@ -74,6 +74,9 @@ class BatchedDatasetBuffer(Synchronized):
     @property
     def size(self):
         return len(self.buffer)
+    
+    def is_empty(self):
+        return len(self.buffer) == 0
 
     def is_full(self):
         return len(self.buffer) >= self.max_size
@@ -90,7 +93,7 @@ class BatchedDatasetBuffer(Synchronized):
     
 class BatchedInferenceLoop:
 
-    def __init__(self, max_batch_size: int = 10, max_ms_wait_time: int = 1000):
+    def __init__(self, max_batch_size: int = 10, max_ms_wait_time: int = 200):
         self.buffers: Dict[str, BatchedDatasetBuffer] = {}
         self.max_batch_size = max_batch_size
         self.max_ms_wait_time = max_ms_wait_time
